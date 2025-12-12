@@ -5,8 +5,23 @@ import pdb
 from torchvision.models.segmentation import deeplabv3_resnet50
 
 from .metrics.mIoU_calculator import IoUs_calculator
+import os
 
-res50 = "" #TODO: Fix the resnet50 pretrained file path here.
+# 获取当前脚本 (xxx_models.py) 所在的目录 -> .../EvSemSeg/models
+_model_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 获取项目根目录 (假设 models 和 pretrained 是兄弟目录，都在 EvSemSeg 下)
+# 向上一级 -> .../EvSemSeg
+_project_root = os.path.dirname(_model_dir)
+
+# 拼接权重文件的完整路径 -> .../EvSemSeg/pretrained/resnet50.pth
+# res50 = "" #TODO: Fix the resnet50 pretrained file path here.
+res50 = os.path.join(_project_root, "pretrained", "resnet50-0676ba61")
+
+# 调试打印 (首次运行时可以取消注释，确认路径对不对)
+# print(f"DEBUG: Loading ResNet50 weights from: {res50}")
+
+
 class deeplabv3(nn.Module):
     def __init__(self, writer, n_classes, void_index = None):
         super(deeplabv3, self).__init__()

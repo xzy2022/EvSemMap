@@ -14,7 +14,7 @@ def setup_local_weights():
     
     # 2. 最终你项目想要保存的目标文件名 (如果不改名，这一步其实只是原地复制)
     # 假设你项目代码里读取的是 "resnet50.pth"
-    target_file = os.path.join(pretrained_dir, "resnet50.pth")
+    target_file = os.path.join(pretrained_dir, "resnet50-0676ba61.pth")
 
     if not os.path.exists(source_file):
         print(f"❌ 错误: 找不到文件 {source_file}")
