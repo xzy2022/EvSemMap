@@ -30,7 +30,8 @@ rellis_split_dict = {
 }
 
 LOADER_PHASE = ['train', 'val', 'test']
-RELLIS_ROOT = '/data/Rellis-3D'
+# RELLIS_ROOT = '/data/Rellis-3D'
+RELLIS_ROOT = '/home/xzy/datasets/Rellis-3D'
 RGB_POSTFIX = 'pylon_camera_node'
 LBL_POSTFIX = 'pylon_camera_node_label_color'
 
