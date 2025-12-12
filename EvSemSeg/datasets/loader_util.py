@@ -2,6 +2,11 @@
 import pandas as pd
 import torchvision.transforms as transforms
 
+from pathlib import Path
+
+
+
+
 def inv_transform(img) :
     invTrans = transforms.Compose([ transforms.Normalize(mean = [0., 0., 0.],
                                                         std = [1/0.229, 1/0.224, 1/0.225]),
@@ -37,12 +42,18 @@ rellis_orgid2_orgid_compact20 = {id1: id2 for id1, id2 in list(zip(RELLIS_ORG_ID
 
 ### RemapV3
 # V3 Remapped ID to V3 Color
-remapV3color = pd.read_csv('v3_v1_colormap_paper_unified.txt', sep="\t", header=None)
+
+# remapV3color = pd.read_csv('v3_v1_colormap_paper_unified.txt', sep="\t", header=None)
+
+_THIS_DIR = Path(__file__).resolve().parent # 获取当前文件所在的路径
+remapV3color = pd.read_csv(_THIS_DIR / 'v3_v1_colormap_paper_unified.txt', sep="\t", header=None)
+
 remapV3color.columns = ["new_id", "new_name", "R", "G", "B"]
 V3_newID2color = {id: [r, g, b] for (id, r, g, b) in zip(remapV3color.new_id, remapV3color.R, remapV3color.G, remapV3color.B)}
 
 # V3 Rellis&RUGD ID to V3 ID
-remapV3 = pd.read_csv('v3_v1.txt', sep="\t", header=None)
+# remapV3 = pd.read_csv('v3_v1.txt', sep="\t", header=None)
+remapV3 = pd.read_csv(_THIS_DIR / 'v3_v1.txt', sep="\t", header=None)
 remapV3.columns = ["org_id", "org_name", "new_id"]
 V3_rugd_rellis_orgID2remapID = {id: newID for (id, newID) in zip(remapV3.org_id, remapV3.new_id)}
 
