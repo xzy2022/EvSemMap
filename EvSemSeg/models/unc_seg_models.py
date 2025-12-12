@@ -13,13 +13,16 @@ _model_dir = os.path.dirname(os.path.abspath(__file__))
 
 # 获取项目根目录 (假设 models 和 pretrained 是兄弟目录，都在 EvSemSeg 下)
 # 向上一级 -> .../EvSemSeg
-_project_root = os.path.dirname(_model_dir)
+_EvSemSeg_Pkg_root = os.path.dirname(_model_dir)
+_project_root = os.path.dirname(_EvSemSeg_Pkg_root)
+# 调试打印 (首次运行时可以取消注释，确认路径对不对)
+# print(f"DEBUG: _model_dir: {_model_dir}")
+# print(f"DEBUG: _project_root: {_project_root}")
 
 # 拼接权重文件的完整路径 -> .../EvSemSeg/pretrained/resnet50.pth
-res50 = os.path.join(_project_root, "pretrained", "resnet50-0676ba61")
+res50 = os.path.join(_project_root, "pretrained", "resnet50-0676ba61.pth")
 
-# 调试打印 (首次运行时可以取消注释，确认路径对不对)
-# print(f"DEBUG: Loading ResNet50 weights from: {res50}")
+
 
 class deeplabv3(nn.Module):
 	def __init__(self, writer, n_classes, unc_args, void_index=None):
