@@ -14,7 +14,7 @@ common_params_for_train = f'--evd_type edl \
 ############################################# TRAIN #############################################
 rellisv3_train = f'CUDA_VISIBLE_DEVICES=0 {PYTHON_EXE} main.py \
    --n_epoch 100 \
-   --batch_size 2 \
+   --batch_size 1 \
    --l_rate 2e-4 \
    --model evidential \
    --dataset rellis_-4 \
