@@ -1,5 +1,8 @@
 import os
 import argparse
+import sys
+PYTHON_EXE = sys.executable
+
 
 # --log_dir ./ckpts (default)
 # --save_freq 10 (default)
@@ -9,9 +12,9 @@ common_params_for_train = f'--evd_type edl \
    --kl_strength 0.5 \
    --ohem -1.0 '
 ############################################# TRAIN #############################################
-rellisv3_train = f'CUDA_VISIBLE_DEVICES=2 python main.py \
+rellisv3_train = f'CUDA_VISIBLE_DEVICES=0 {PYTHON_EXE} main.py \
    --n_epoch 100 \
-   --batch_size 24 \
+   --batch_size 2 \
    --l_rate 2e-4 \
    --model evidential \
    --dataset rellis_-4 \
@@ -21,7 +24,7 @@ rellisv3_train = f'CUDA_VISIBLE_DEVICES=2 python main.py \
    {common_params_for_train}\
    --with_void False'
 ########################################### VALIDATION ###########################################
-rellisv3_val = f'CUDA_VISIBLE_DEVICES=2 python main.py \
+rellisv3_val = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 24 \
    --l_rate 2e-4 \
@@ -34,7 +37,7 @@ rellisv3_val = f'CUDA_VISIBLE_DEVICES=2 python main.py \
    --partial_val 100 \
    {common_params_for_train}\
    --with_void False'
-rellisv3_val_holdout = f'CUDA_VISIBLE_DEVICES=2 python main.py \
+rellisv3_val_holdout = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 24 \
    --l_rate 2e-4 \
@@ -47,7 +50,7 @@ rellisv3_val_holdout = f'CUDA_VISIBLE_DEVICES=2 python main.py \
    --partial_val 100 \
    {common_params_for_train}\
    --with_void False'
-rellisv3_val_cross = f'CUDA_VISIBLE_DEVICES=2 python main.py \
+rellisv3_val_cross = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 24 \
    --l_rate 2e-4 \
@@ -63,7 +66,7 @@ rellisv3_val_cross = f'CUDA_VISIBLE_DEVICES=2 python main.py \
    --with_void False'
 
 ########################################### TEST ###########################################
-rellisv3_test_holdout = f'CUDA_VISIBLE_DEVICES=2 python main.py \
+rellisv3_test_holdout = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 24 \
    --l_rate 2e-4 \
@@ -77,7 +80,7 @@ rellisv3_test_holdout = f'CUDA_VISIBLE_DEVICES=2 python main.py \
    --with_void False'
 
 ########################################### PREP ###########################################
-rellisv3_prep = f'CUDA_VISIBLE_DEVICES=2 python main.py \
+rellisv3_prep = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --batch_size 24 \
    --model evidential \
    --dataset rellis_4 \
