@@ -12,9 +12,10 @@ common_params_for_train = f'--evd_type edl \
    --kl_strength 0.5 \
    --ohem -1.0 '
 ############################################# TRAIN #############################################
-rellisv3_train = f'CUDA_VISIBLE_DEVICES=0 {PYTHON_EXE} main.py \
+# 本项目使用DP进行并行训练，batch_size会自动被平均分到各个卡上
+rellisv3_train = f'CUDA_VISIBLE_DEVICES=0,1 {PYTHON_EXE} main.py \
    --n_epoch 100 \
-   --batch_size 6 \
+   --batch_size 12 \
    --l_rate 2e-4 \
    --model evidential \
    --dataset rellis_-4 \
