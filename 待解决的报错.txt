@@ -1,0 +1,19 @@
+root@autodl-container-565243b323-8a678e50:~/EvSemMap/EvSemSeg# ls ~/datasets/Rellis-3D/
+00001
+root@autodl-container-565243b323-8a678e50:~/EvSemMap/EvSemSeg# python3 execute_params.py --mode ex-train
+Namespace(batch_size=1, cross_inference='$NONE$', data_subset='-4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=0.0002, load='$NONE$', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=None, phase='train', prep_only_vis=False, remap_version=3, remark='rellisv3_edl_train-4_temp', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+Traceback (most recent call last):
+  File "main.py", line 122, in <module>
+    cross_inf_dataset, train_dataset = setup_dataset(args) 
+  File "main.py", line 79, in setup_dataset
+    _setup_dataset(args.dataset, args.data_subset, args.remap_version, args.partial_val), 
+  File "main.py", line 66, in _setup_dataset
+    return Rellis3DLoader(data_subset, partial_val=partial_val, ds_factor=2.0, remap_version=remap_version)
+  File "/root/EvSemMap/EvSemSeg/datasets/loader_rellis.py", line 67, in __init__
+    img_files = np.sort(os.listdir(img_dir))
+FileNotFoundError: [Errno 2] No such file or directory: '~/datasets/Rellis-3D/00000/pylon_camera_node'
+root@autodl-container-565243b323-8a678e50:~/EvSemMap/EvSemSeg# 
+
+现在我尝试在租用的服务器上先把代码跑通。数据集只上传了00001，为什么执行训练直接报错了，代码一定要找到00000？
+python3 execute_params.py --mode ex-train 介绍一下这个命令的执行过程。
+分析代码在训练过程的数据集加载逻辑、划分逻辑、预处理逻辑。最后变成了什么样的输入与标签？
