@@ -28,7 +28,12 @@ class deeplabv3(nn.Module):
 	def __init__(self, writer, n_classes, unc_args, void_index=None):
 		super(deeplabv3, self).__init__()
 
-		self.encoder = deeplabv3_resnet50(weights=None, num_classes=n_classes, weights_backbone=None)
+		# torchvision >=0.13.0
+		# self.encoder = deeplabv3_resnet50(weights=None, num_classes=n_classes, weights_backbone=None)
+
+		# torchvision =0.12.0
+		self.encoder = deeplabv3_resnet50(pretrained=False, num_classes=n_classes)
+
 		self.encoder.backbone.load_state_dict(torch.load(res50), strict=False)
 		self.criterion = nn.CrossEntropyLoss(reduction='none')
 		self.lossCal = EvidentialLossCal(writer=writer, unc_args=unc_args, void_index=void_index)
