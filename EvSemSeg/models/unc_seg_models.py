@@ -31,7 +31,7 @@ class deeplabv3(nn.Module):
 		# torchvision >=0.13.0
 		# self.encoder = deeplabv3_resnet50(weights=None, num_classes=n_classes, weights_backbone=None)
 
-		# torchvision =0.12.0
+		# torchvision = 0.12.0
 		self.encoder = deeplabv3_resnet50(pretrained=False, num_classes=n_classes)
 
 		self.encoder.backbone.load_state_dict(torch.load(res50), strict=False)
