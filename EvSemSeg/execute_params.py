@@ -13,6 +13,10 @@ common_params_for_train = f'--evd_type edl \
    --ohem -1.0 '
 ############################################# TRAIN #############################################
 # 本项目使用DP进行并行训练，batch_size会自动被平均分到各个卡上
+# -- load指向你要恢复的 checkpoint，例如
+# --load ./ckpts/rellisv3_edl_train-4_temp/50.pth
+# --load \'$NONE$\'  表示重新训练
+# --save_freq 1 表示每个epoch都保存权重，否则每10轮保存一次（追加而非覆盖）
 rellisv3_train = f'CUDA_VISIBLE_DEVICES=0,1 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 12 \
@@ -22,6 +26,7 @@ rellisv3_train = f'CUDA_VISIBLE_DEVICES=0,1 {PYTHON_EXE} main.py \
    --remap_version 3 \
    --phase train \
    --remark rellisv3_edl_train-4_temp \
+   --load \'$NONE$\' \
    {common_params_for_train}\
    --with_void False'
 ########################################### VALIDATION ###########################################
