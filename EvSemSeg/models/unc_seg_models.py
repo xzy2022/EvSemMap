@@ -29,10 +29,10 @@ class deeplabv3(nn.Module):
 		super(deeplabv3, self).__init__()
 
 		# torchvision >=0.13.0
-		# self.encoder = deeplabv3_resnet50(weights=None, num_classes=n_classes, weights_backbone=None)
+		self.encoder = deeplabv3_resnet50(weights=None, num_classes=n_classes, weights_backbone=None)
 
 		# torchvision = 0.12.0
-		self.encoder = deeplabv3_resnet50(pretrained=False, num_classes=n_classes)
+		# self.encoder = deeplabv3_resnet50(pretrained=False, num_classes=n_classes)
 
 		self.encoder.backbone.load_state_dict(torch.load(res50), strict=False)
 		self.criterion = nn.CrossEntropyLoss(reduction='none')
