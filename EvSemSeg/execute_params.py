@@ -31,6 +31,7 @@ rellisv3_train = f'CUDA_VISIBLE_DEVICES=0,1 {PYTHON_EXE} main.py \
    --save_freq 5\
    --with_void False'
 ########################################### VALIDATION ###########################################
+# [作用]：在训练集划分上跑验证（通常意义不大，主要是检查代码是否跑通）
 rellisv3_val = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 24 \
@@ -44,6 +45,10 @@ rellisv3_val = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --partial_val 100 \
    {common_params_for_train}\
    --with_void False'
+
+# [作用]：【核心命令】在“留出集”（Sequence 4）上跑验证。
+# 不保存任何文件（除非代码里特意加了）。速度最快，纯粹为了看数字，这是和test的区别。
+# dataset rellis_4 意味着只读取 00004 序列。而训练中只用了 00000 00001 00002 00003 四个序列。
 rellisv3_val_holdout = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 24 \
@@ -57,6 +62,9 @@ rellisv3_val_holdout = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --partial_val 100 \
    {common_params_for_train}\
    --with_void False'
+
+# 测试跨数据集泛化能力
+# 代码试图加载一个非 RELLIS 的数据集（这里写的是 DIFFERENT_DATASET，实际可能指向 RUGD 或私有数据集）。
 rellisv3_val_cross = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 24 \
@@ -73,6 +81,8 @@ rellisv3_val_cross = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --with_void False'
 
 ########################################### TEST ###########################################
+# 标准的论文跑分命令。它会在 RELLIS 的测试集（序列 4）上跑完全部数据，计算最终的 mIoU
+# 通常也会保存彩色的分割结果图，用于写论文贴图或人工检查。
 rellisv3_test_holdout = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --n_epoch 100 \
    --batch_size 24 \
@@ -87,6 +97,8 @@ rellisv3_test_holdout = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --with_void False'
 
 ########################################### PREP ###########################################
+# EvSemMap 项目特有的关键步骤。它的目的不是为了给人看，而是为了给机器（3D 建图模块）看。
+# 它会把推理出的 原始证据（Evidence/Logits）保存下来。
 rellisv3_prep = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --batch_size 24 \
    --model evidential \
