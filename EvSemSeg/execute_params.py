@@ -19,7 +19,7 @@ common_params_for_train = f'--evd_type edl \
 # --save_freq 1 表示每个epoch都保存权重，否则每10轮保存一次（追加而非覆盖）
 rellisv3_train = f'CUDA_VISIBLE_DEVICES=0 {PYTHON_EXE} main.py \
    --n_epoch 100 \
-   --batch_size 4 \
+   --batch_size 8 \
    --l_rate 2e-4 \
    --model evidential \
    --dataset rellis_-4 \
