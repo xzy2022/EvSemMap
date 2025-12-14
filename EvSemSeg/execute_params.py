@@ -28,6 +28,7 @@ rellisv3_train = f'CUDA_VISIBLE_DEVICES=0,1 {PYTHON_EXE} main.py \
    --remark rellisv3_edl_train-4_temp \
    --load \'$NONE$\' \
    {common_params_for_train}\
+   --save_freq 5\
    --with_void False'
 ########################################### VALIDATION ###########################################
 rellisv3_val = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
