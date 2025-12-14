@@ -41,6 +41,7 @@ def folder_check_and_config_save(args):
         raise Exception(f"There is no model @ {args.load}")
     
     print(args)
+    print("out_img_dir:", out_img_dir)
     return out_model_dir, out_img_dir
 #############################################
 

@@ -47,18 +47,18 @@ rellisv3_val = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --with_void False'
 
 # [作用]：【核心命令】在“留出集”（Sequence 4）上跑验证。
-# 不保存任何文件（除非代码里特意加了）。速度最快，纯粹为了看数字，这是和test的区别。
+# 有图像处理
 # dataset rellis_4 意味着只读取 00004 序列。而训练中只用了 00000 00001 00002 00003 四个序列。
 rellisv3_val_holdout = f'CUDA_VISIBLE_DEVICES=0 {PYTHON_EXE} main.py \
    --n_epoch 100 \
-   --batch_size 800 \
+   --batch_size 8 \
    --l_rate 2e-4 \
    --model evidential \
    --dataset rellis_4 \
    --remap_version 3 \
    --phase val \
    --remark rellisv3_edl_train-4 \
-   --load /root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/5.pth \
+   --load /root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/15.pth \
    {common_params_for_train}\
    --with_void False'
 
