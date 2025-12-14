@@ -1,0 +1,131 @@
+Namespace(batch_size=80, cross_inference='$NONE$', data_subset='4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=1e-05, load='/root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/5.pth', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=100, phase='val', prep_only_vis=False, remap_version=3, remark='eval_result', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+DATA SPLIT 00004 @ 899 images / 899 labels found.
+RELLIS-3D Dataset Validity Checked : 100 image+label pairs found.
+The number of validation images = 100
+
+
+ Done:: 135.06349 sec
+Namespace(batch_size=80, cross_inference='$NONE$', data_subset='4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=1e-05, load='/root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/10.pth', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=100, phase='val', prep_only_vis=False, remap_version=3, remark='eval_result', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+DATA SPLIT 00004 @ 899 images / 899 labels found.
+RELLIS-3D Dataset Validity Checked : 100 image+label pairs found.
+The number of validation images = 100
+Namespace(batch_size=40, cross_inference='$NONE$', data_subset='4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=1e-05, load='/root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/5.pth', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=None, phase='test', prep_only_vis=False, remap_version=3, remark='eval_result', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+DATA SPLIT 00004 @ 899 images / 899 labels found.
+RELLIS-3D Dataset Validity Checked : 899 image+label pairs found.
+The number of test images = 899
+[2.68589800e+06 1.71377442e+08 2.10480900e+06 4.76900000e+03
+ 2.82639000e+05 6.85343500e+06 1.53524387e+08 1.29057778e+08]
+[5.94905400e+06 1.79788408e+08 3.55735300e+06 9.88800000e+04
+ 5.40988000e+05 3.40915460e+07 1.93692917e+08 1.52037697e+08]
+------- Class-wise mIoUs ------------------------
+[0.45148321 0.95321742 0.59167842 0.04823018 0.52244967 0.20103034
+ 0.79261746 0.84885381]
+-------- Test Results ----------------------------
+Data_size  : 899
+Accuracy   :  0.8997 
+mIoU       :  0.5512 
+ECE Bin  10:  0.0599 | MCE: 0.2135
+ECE Bin  20:  0.0599 | MCE: 0.3498
+
+
+ Done:: 178.48843 sec
+Namespace(batch_size=40, cross_inference='$NONE$', data_subset='4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=1e-05, load='/root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/10.pth', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=None, phase='test', prep_only_vis=False, remap_version=3, remark='eval_result', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+DATA SPLIT 00004 @ 899 images / 899 labels found.
+RELLIS-3D Dataset Validity Checked : 899 image+label pairs found.
+The number of test images = 899
+[3.57508000e+06 1.72004441e+08 2.16676000e+06 1.31900000e+03
+ 4.07713000e+05 5.42442300e+06 1.57510114e+08 1.26199232e+08]
+[6.09642300e+06 1.79310940e+08 4.30025300e+06 9.85270000e+04
+ 7.05560000e+05 3.40280140e+07 1.96687530e+08 1.47131671e+08]
+------- Class-wise mIoUs ------------------------
+[0.58642256 0.95925235 0.50386803 0.01338719 0.5778573  0.15941051
+ 0.80081393 0.85772989]
+-------- Test Results ----------------------------
+Data_size  : 899
+Accuracy   :  0.9024 
+mIoU       :  0.5573 
+ECE Bin  10:  0.0493 | MCE: 0.4095
+ECE Bin  20:  0.0493 | MCE: 0.4673
+
+
+ Done:: 187.01834 sec
+Namespace(batch_size=40, cross_inference='$NONE$', data_subset='4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=1e-05, load='/root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/15.pth', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=None, phase='test', prep_only_vis=False, remap_version=3, remark='eval_result', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+DATA SPLIT 00004 @ 899 images / 899 labels found.
+RELLIS-3D Dataset Validity Checked : 899 image+label pairs found.
+The number of test images = 899
+[3.54857300e+06 1.71984186e+08 2.10051300e+06 1.51800000e+03
+ 3.92014000e+05 1.26791240e+07 1.55462094e+08 1.27526549e+08]
+[6.06105400e+06 1.79300565e+08 3.06410400e+06 9.94900000e+04
+ 6.04033000e+05 3.51455540e+07 1.89875282e+08 1.47803347e+08]
+------- Class-wise mIoUs ------------------------
+[0.58547127 0.95919489 0.68552275 0.01525781 0.64899434 0.3607604
+ 0.81875899 0.86281232]
+-------- Test Results ----------------------------
+Data_size  : 899
+Accuracy   :  0.9148 
+mIoU       :  0.6171 
+ECE Bin  10:  0.0418 | MCE: 0.5897
+ECE Bin  20:  0.0419 | MCE: 0.5897
+
+
+ Done:: 189.72226 sec
+Namespace(batch_size=40, cross_inference='$NONE$', data_subset='4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=1e-05, load='/root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/20.pth', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=None, phase='test', prep_only_vis=False, remap_version=3, remark='eval_result', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+DATA SPLIT 00004 @ 899 images / 899 labels found.
+RELLIS-3D Dataset Validity Checked : 899 image+label pairs found.
+The number of test images = 899
+[3.45401800e+06 1.71476943e+08 2.11547600e+06 6.07000000e+02
+ 3.82002000e+05 1.13282680e+07 1.55592385e+08 1.28491015e+08]
+[5.95615000e+06 1.78842822e+08 3.33445500e+06 9.83230000e+04
+ 6.02415000e+05 3.52988420e+07 1.90470953e+08 1.48203326e+08]
+------- Class-wise mIoUs ------------------------
+[0.57990783 0.95881367 0.63442931 0.00617353 0.63411768 0.32092464
+ 0.81688248 0.86699144]
+-------- Test Results ----------------------------
+Data_size  : 899
+Accuracy   :  0.9131 
+mIoU       :  0.6023 
+ECE Bin  10:  0.0488 | MCE: 0.4345
+ECE Bin  20:  0.0488 | MCE: 0.4345
+
+
+ Done:: 191.05175 sec
+Namespace(batch_size=40, cross_inference='$NONE$', data_subset='4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=1e-05, load='/root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/25.pth', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=None, phase='test', prep_only_vis=False, remap_version=3, remark='eval_result', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+DATA SPLIT 00004 @ 899 images / 899 labels found.
+RELLIS-3D Dataset Validity Checked : 899 image+label pairs found.
+The number of test images = 899
+[3.28311400e+06 1.72102865e+08 2.10119600e+06 2.85600000e+03
+ 3.71032000e+05 1.03392600e+07 1.56105017e+08 1.27111308e+08]
+[5.99134100e+06 1.79927351e+08 3.32924500e+06 1.02833000e+05
+ 5.47752000e+05 3.49149170e+07 1.92037638e+08 1.47380275e+08]
+------- Class-wise mIoUs ------------------------
+[0.54797649 0.95651308 0.63113288 0.02777319 0.67737224 0.2961273
+ 0.81288761 0.86247164]
+-------- Test Results ----------------------------
+Data_size  : 899
+Accuracy   :  0.9104 
+mIoU       :  0.6015 
+ECE Bin  10:  0.0592 | MCE: 0.3344
+ECE Bin  20:  0.0593 | MCE: 0.4836
+
+
+ Done:: 187.80359 sec
+Namespace(batch_size=40, cross_inference='$NONE$', data_subset='4', dataset='rellis', evd_type='edl', kl_strength=0.5, l_rate=1e-05, load='/root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/30.pth', log_dir='./ckpts', model='evidential', n_epoch=100, ohem=-1.0, partial_val=None, phase='test', prep_only_vis=False, remap_version=3, remark='eval_result', save_freq=10, unc_act='exp', unc_type='log', with_void=False)
+DATA SPLIT 00004 @ 899 images / 899 labels found.
+RELLIS-3D Dataset Validity Checked : 899 image+label pairs found.
+The number of test images = 899
+[3.20805900e+06 1.71822224e+08 2.08915700e+06 1.28200000e+03
+ 3.79088000e+05 1.02552140e+07 1.56892192e+08 1.26620266e+08]
+[5.97691000e+06 1.79513757e+08 3.16730600e+06 9.96290000e+04
+ 5.51536000e+05 3.48752470e+07 1.93165209e+08 1.47030924e+08]
+------- Class-wise mIoUs ------------------------
+[0.53674206 0.95715352 0.65960062 0.01286774 0.68733138 0.29405423
+ 0.81221765 0.86118119]
+-------- Test Results ----------------------------
+Data_size  : 899
+Accuracy   :  0.9101 
+mIoU       :  0.6026 
+ECE Bin  10:  0.0621 | MCE: 0.2771
+ECE Bin  20:  0.0622 | MCE: 0.4128
+
+
+ Done:: 188.61095 sec
