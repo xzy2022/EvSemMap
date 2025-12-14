@@ -103,8 +103,8 @@ rellisv3_test_holdout = f'CUDA_VISIBLE_DEVICES=0 {PYTHON_EXE} main.py \
 ########################################### PREP ###########################################
 # EvSemMap 项目特有的关键步骤。它的目的不是为了给人看，而是为了给机器（3D 建图模块）看。
 # 它会把推理出的 原始证据（Evidence/Logits）保存下来。
-rellisv3_prep = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
-   --batch_size 24 \
+rellisv3_prep = f'CUDA_VISIBLE_DEVICES=0 {PYTHON_EXE} main.py \
+   --batch_size 8 \
    --model evidential \
    --dataset rellis_4 \
    --cross_inference rellis_4 \
@@ -112,7 +112,7 @@ rellisv3_prep = f'CUDA_VISIBLE_DEVICES=2 {PYTHON_EXE} main.py \
    --phase prep \
    --remark rellisv3_edl_train-4 \
    {common_params_for_train}\
-   --load /kjyoung/EvSemMapCode/EvSemSeg/ckpts/rellisv3_edl_train-4/100.pth \
+   --load /root/autodl-tmp/ckpts/rellisv3_edl_train-4_temp/15.pth \
    --with_void False'
 
 def main():

@@ -96,11 +96,11 @@ def prep_function(OUTPUT_DIR, DATASET_DIR, IMG_POSTFIX, Sequence,
                     torchvision.utils.save_image(unc_color_tensor, os.path.join(out_root_vis, f"{os.path.basename(img_file)[:-4]}_UNC.jpg"))
                     torchvision.utils.save_image(orig_img, os.path.join(out_root_vis, f"{os.path.basename(img_file)[:-4]}_RGB.jpg"))
 
-RELLIS_ROOT = '/data/Rellis-3D'
+RELLIS_ROOT = '/root/autodl-tmp/Rellis-3D'
 
 def preparation(model, dataset, data_subset, remark, label_transform, prep_only_vis):
     if dataset == 'rellis':
-        OUTPUT_ROOT = '/kjyoung/convertedRellis'
+        OUTPUT_ROOT = '/root/convertedRellis'
         DATASET_ROOT = RELLIS_ROOT
         IMG_POSTFIX = 'pylon_camera_node'
         ds_factor = 2.0 # ds_factor = 2.2
