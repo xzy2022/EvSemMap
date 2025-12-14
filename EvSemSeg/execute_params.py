@@ -17,9 +17,9 @@ common_params_for_train = f'--evd_type edl \
 # --load ./ckpts/rellisv3_edl_train-4_temp/50.pth
 # --load \'$NONE$\'  表示重新训练
 # --save_freq 1 表示每个epoch都保存权重，否则每10轮保存一次（追加而非覆盖）
-rellisv3_train = f'CUDA_VISIBLE_DEVICES=0 {PYTHON_EXE} main.py \
+rellisv3_train = f'CUDA_VISIBLE_DEVICES=0,1 {PYTHON_EXE} main.py \
    --n_epoch 100 \
-   --batch_size 8 \
+   --batch_size 16 \
    --l_rate 2e-4 \
    --model evidential \
    --dataset rellis_-4 \
