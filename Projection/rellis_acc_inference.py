@@ -149,9 +149,9 @@ def process_each_sequence(seq, distCoeff, binning_num=1, save_vtk = True, ds = N
 
 # 1. Dataset Location
 # Where is Image, LiDAR, Pose, ...
-RELLIS_ROOT = '/data/Rellis-3D'
-RELLIS_CAMERA_INFO = '/data/Rellis_3D_cam_intrinsic/Rellis-3D'
-RELLIS_TRANSFORM = '/data/Rellis_3D_cam2lidar_20210224/Rellis_3D'
+RELLIS_ROOT = '/home/xzy/datasets/Rellis-3D'
+RELLIS_CAMERA_INFO = '/home/xzy/datasets/Rellis-3D/Rellis_3D_cam_intrinsic/Rellis-3D'
+RELLIS_TRANSFORM = '/home/xzy/datasets/Rellis-3D/Rellis_3D_cam2lidar_20210224/Rellis_3D'
 OS1_LIDAR_POSTFIX = 'os1_cloud_node_kitti_bin'
 
 if __name__ == '__main__':
@@ -174,7 +174,8 @@ if __name__ == '__main__':
     # 0. Process Parameters
 
     # 1. Directory Settings! You may modify this! ##########################################################
-    MY_DIR_ROOT = '/kjyoung/convertedRellis'
+    # MY_DIR_ROOT = '/kjyoung/convertedRellis'
+    MY_DIR_ROOT = '/home/xzy/Downloads/convertedRellis'
     OUT_REMARK = os.path.join(MY_DIR_ROOT, target_remark)
     # in OUT_REMARK directory
     # 01_inferenced_npy: 2D Seg Model Inferenced (C * H * W) Numpy Files
