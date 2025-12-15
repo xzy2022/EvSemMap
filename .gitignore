@@ -65,11 +65,27 @@ Thumbs.db
 ##################################
 # 编译 / 临时文件
 ##################################
-build/
-dist/
+**/build/
+**/dist/
 *.log
 *.tmp
 *.cache
+**/CMakeLists.txt
+
+
+
+# ========== SemanticMap catkin_make 生成文件 ==========
+SemanticMap/build/
+SemanticMap/devel/
+SemanticMap/install/
+SemanticMap/.catkin_workspace
+SemanticMap/CMakeCache.txt
+SemanticMap/CMakeFiles/
+SemanticMap/Makefile
+SemanticMap/cmake_install.cmake
+SemanticMap/*.so
+SemanticMap/lib/
+SemanticMap/bin/
 
 ############################
 # 数据集
