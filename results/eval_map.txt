@@ -1,0 +1,52 @@
+[INFO] [1765801034.169107920]: Scan 28 done
+working on /home/xzy/Downloads/convertedRellis/rellisv3_edl_train-4/05_pVec_pcd/00004/merged29.pcd
+77218=>30810
+[INFO] [1765801044.994219955]: Scan 29 done
+working on /home/xzy/Downloads/convertedRellis/rellisv3_edl_train-4/05_pVec_pcd/00004/merged30.pcd
+74007=>28539
+[INFO] [1765801054.612228219]: Scan 30 done
+min_var updated! 0.00769978
+min_var updated! 0.00671308
+min_var updated! 0.00417827
+min_var updated! 0.00330306
+min_var updated! 0.00323483
+min_var updated! 0.00187489
+min_var updated! 0.00158742
+min_var updated! 0.00155493
+min_var updated! 0.00107119
+min_var updated! 0.000722491
+min_var updated! 0.000477688
+min_var updated! 0.000417109
+min_var updated! 0.000288302
+min_var updated! 0.000233579
+min_var updated! 0.000192164
+min_var updated! 0.000156679
+min_var updated! 0.000151529
+min_var updated! 0.000147348
+min_var updated! 0.000144206
+min_var updated! 0.000121626
+min_var updated! 0.000103227
+min_var updated! 8.74467e-05
+min_var updated! 8.63113e-05
+min_var updated! 8.29678e-05
+min_var updated! 8.11836e-05
+min_var updated! 7.76226e-05
+min_var updated! 7.12528e-05
+min_var updated! 7.06926e-05
+min_var updated! 6.31884e-05
+min_var updated! 5.13377e-05
+min_var updated! 3.87548e-05
+min_var updated! 3.78838e-05
+min_var updated! 2.95458e-05
+min_var updated! 2.06326e-05
+min_var updated! 1.68345e-05
+min_var updated! 1.57756e-05
+min_var updated! 1.17487e-05
+min_var updated! 1.12305e-05
+min_var updated! 1.05617e-05
+min_var updated! 9.92875e-06
+min_var updated! 8.97586e-06
+max_var0.0171003
+min_var8.97586e-06
+[INFO] [1765801054.911960812]: The identifier was.. /home/xzy/deployTest/rellis_map
+[INFO] [1765801054.954961587]: Map Finished in 187.72s

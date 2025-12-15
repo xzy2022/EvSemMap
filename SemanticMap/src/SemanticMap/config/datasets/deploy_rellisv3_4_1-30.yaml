@@ -27,4 +27,4 @@ num_class: 9
 scan_start: 1
 # 00004 full
 scan_num: 30
-dir: /workspace/convertedRellis/rellisv3_edl_train-4/05_pVec_pcd/00004/                           # SERVER, rellisv3_edlt17_train-4, BKIFormatter30
+dir: /home/xzy/Downloads/convertedRellis/rellisv3_edl_train-4/05_pVec_pcd/00004/                          # SERVER, rellisv3_edlt17_train-4, BKIFormatter30

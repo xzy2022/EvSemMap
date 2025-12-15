@@ -73,8 +73,8 @@ source devel/setup.bash    # 刷新环境变量
         <param name="scan_start" value="1" />   
         <param name="scan_num" value="30" />   
 
-        <param name="out_path" value="/root/convertedRellis/rellisv3_edl_train-4/05_pVec_pcd/00004/" />
-        <param name="dir" value="/root/convertedRellis/rellisv3_edl_train-4/03_nby3pK_npy/00004/" />
+        <param name="out_path" value="/home/xzy/Downloads/convertedRellis/rellisv3_edl_train-4/05_pVec_pcd/00004/" />
+        <param name="dir" value="/home/xzy/Downloads/convertedRellis/rellisv3_edl_train-4/03_nby3pK_npy/00004/" />
 
     </node>
 </launch>
