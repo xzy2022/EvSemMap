@@ -95,7 +95,27 @@ def run_hmc_optimization(points, labels, n_query=500):
         # 注意：需要处理截断 (Sparse Cutoff)
         
         # 1. 计算高斯部分
-        kernel_val = sf2 * pm.math.exp(-0.5 * (dist_matrix**2) / (ell**2))
+        # kernel_val = sf2 * pm.math.exp(-0.5 * (dist_matrix**2) / (ell**2))
+
+        # --- B. 定义 BKI 核函数 (复现 C++ vbki.h 逻辑) ---
+        # 1. 计算归一化距离 r = d / ell
+        r = dist_matrix / ell
+        
+        # 2. 定义常量
+        pi = np.pi
+        two_pi_r = 2.0 * pi * r
+        
+        # 3. 计算 Sparse Kernel 公式
+        # k = ( (2+cos(2pir))*(1-r)/3 + sin(2pir)/2pi ) * sf2
+        term1 = 2.0 + pm.math.cos(two_pi_r)
+        term2 = 1.0 - r
+        term3 = pm.math.sin(two_pi_r)
+        
+        k_raw = ( (term1 * term2 / 3.0) + (term3 / (2.0 * pi)) ) * sf2
+        
+        # 4. 截断 (C++逻辑: 小于0则置为0)
+        # 这种核函数通常在 r >= 1 时会变成负数震荡或衰减，C++ 强行截断为 0
+        kernel_val = pm.math.switch(k_raw < 0, 0.0, k_raw)
         
         # 2. 应用稀疏截断 (模拟 C++ if dist > 3*ell return 0)
         # 为了 HMC 梯度连续性，这里暂不使用硬截断(switch)，依靠高斯函数的快速衰减
