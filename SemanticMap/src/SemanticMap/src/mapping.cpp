@@ -135,8 +135,8 @@ int main(int argc, char **argv)
         bool parameterPassed;
         parameterPassed = nh.hasParam("max_range") && nh.hasParam("resolution") && nh.hasParam("ds_resolution") && nh.hasParam("block_depth") && nh.hasParam("num_class");
         parameterPassed = parameterPassed && nh.hasParam("scan_start") && nh.hasParam("scan_stride") && nh.hasParam("scan_num") && nh.hasParam("dir") && nh.hasParam("result_name");
-        parameterPassed = parameterPassed && nh.hasParam("mapping_mode") && nh.hasParam("mapping_strategy") && nh.hasParam("mapping_media") && nh.hasParam("uncertainty_strategy") && nh.hasParam("ell");
-
+        // parameterPassed = parameterPassed && nh.hasParam("mapping_mode") && nh.hasParam("mapping_strategy") && nh.hasParam("mapping_media") && nh.hasParam("uncertainty_strategy") && nh.hasParam("ell");
+        parameterPassed = parameterPassed && nh.hasParam("mapping_mode") && nh.hasParam("mapping_strategy") && nh.hasParam("mapping_media") && nh.hasParam("uncertainty_strategy") && nh.hasParam("ell") && nh.hasParam("sf2");
         if (!parameterPassed)
         {
             ROS_ERROR("There are something missing parameters...");
@@ -160,6 +160,7 @@ int main(int argc, char **argv)
 
         // BKI Mapping Parameters
         nh.param<double>("ell", ell, ell);
+        nh.param<double>("sf2", sf2, sf2);
         nh.param<int>("mapping_mode", mapping_mode, mapping_mode);
         nh.param<string>("mapping_strategy", mapping_strategy, mapping_strategy);
         nh.param<string>("mapping_media", mapping_media, mapping_media);

@@ -12,8 +12,14 @@ prefix: merged
 unc_thres: 0.9
 # unc_thres: 0.5
 
-ell: 0.3
-# ell: 0.2
+# 之前默认值
+# ell: 0.3
+# sf2: 1.0 #之前硬编码确定
+# ell: 0.2 #项目自带的注释值
+
+# HMC使用0004序列的部分点云推理得到
+ell: 1.1489
+sf2: 0.4188
 
 ########## Remapping
 # Original
