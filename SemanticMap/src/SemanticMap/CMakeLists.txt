@@ -62,7 +62,6 @@ catkin_package(
 ## Your package locations should be listed before other locations
 
 include_directories(
-  include                       # <--- 为了SemanticMap/src/SemanticMap/src/test_bki_math.cpp 必须加上这一行！！！
   include/semantic_bki/common
   include/semantic_bki/mapping
   ${catkin_INCLUDE_DIRS}

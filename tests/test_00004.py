@@ -87,9 +87,9 @@ def main():
         print(f"包含的语义类别 ID (前10个): {unique_labels[:10]}")
         
         # 简单保存一个小样本用于 HMC 调试 (可选)
-        save_path = 'mini_sample_00004.npy'
-        np.save(save_path, {'points': points, 'labels': labels})
-        print(f"已保存测试样本到: {save_path}")
+        # save_path = 'mini_sample_00004.npy'
+        # np.save(save_path, {'points': points, 'labels': labels})
+        # print(f"已保存测试样本到: {save_path}")
     else:
         print(f"[Fail] 数量不匹配! Points: {points.shape[0]}, Labels: {labels.shape[0]}")
 
