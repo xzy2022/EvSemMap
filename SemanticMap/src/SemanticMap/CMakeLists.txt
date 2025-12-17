@@ -62,6 +62,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 
 include_directories(
+  include                       # <--- 为了SemanticMap/src/SemanticMap/src/test_bki_math.cpp 必须加上这一行！！！
   include/semantic_bki/common
   include/semantic_bki/mapping
   ${catkin_INCLUDE_DIRS}
@@ -104,5 +105,19 @@ target_link_libraries(mapping
 )
 
 target_link_libraries(pcd_conversion
+  ${catkin_LIBRARIES}
+)
+
+
+# 定义测试程序的可执行文件
+# 注意：这里我们复用了 VCOMMON_SOURCE_FILES，它包含了 dempster.cpp 和 vpoint3f.cpp
+# 这样就解决了之前的 "fatal error: dempster.h" 和链接错误
+add_executable(test_bki
+  ${VCOMMON_SOURCE_FILES}
+  src/test_bki_math.cpp
+)
+
+# 链接必要的库（如 OpenCV, PCL 等）
+target_link_libraries(test_bki
   ${catkin_LIBRARIES}
 )
