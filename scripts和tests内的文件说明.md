@@ -7,12 +7,16 @@ float ell = 0.3;  // 默认配置
 float sf2 = 1.0;  // 硬编码默认值
 
 // [结果] 依据均值 mean() 推荐回填 C++ (vbki.h) 的参数:
-float ell = 1.5554;
-float sf2 = 1.4355;
+float ell = 1.2067;
+float sf2 = 0.6711;
 
 // 依据众数（峰值对应的横坐标）推荐回填 C++ (vbki.h) 的参数:
+float ell = 1.1489;;
+float sf2 = 0.4188;;
 
-
+// 注意，在不固定随机种子的情况下，由于选取的数据不同，可能导致双峰分布。
+// Data Loaded: 131072 points
+// Train: 2000, Query: 200, Classes: 7
 ```
 
 
