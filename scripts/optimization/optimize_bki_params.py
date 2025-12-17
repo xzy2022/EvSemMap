@@ -4,19 +4,16 @@ import pymc as pm
 import pytensor.tensor as pt
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
-from sklearn.metrics import accuracy_score
+import scipy.stats as stats
 
 # ================= 配置区域 =================
-# 1. 数据路径 (指向您提取的一小段测试数据)
-# [修改] 改为相对路径或您指定的绝对路径，确保文件存在
+# 1. 数据路径
 DATA_PATH = '/home/xzy/datasets/Rellis-3D/00004/mini_sample_00004.npy' 
+np.random.seed(42) 
 
-# 2. C++ 逻辑对齐 (请务必核对 vbki.h 中的公式)
-# 假设 C++ 中的 distAdaptive 是高斯核: k(d) = sf2 * exp(-0.5 * d^2 / ell^2)
-# 如果您的 C++ 是其他公式（如多项式），请在下方 `bki_kernel_tensor` 中修改
-CUTOFF_RATIO = 3.0  # 稀疏截断: dist > 3*ell 时 k=0
-# [修改] 实际类别数由数据动态决定，防止 hardcode 导致的越界
-NUM_CLASSES = 20    # RELLIS-3D 类别数
+# 2. 优化原理
+# 利用贝叶斯推断（HMC）结合稀疏余弦核函数，从真实点云数据中自动学习出
+# 最优的核函数长度尺度（ell）和信号方差（sf2），以最大化地图构建的语义预测准确性。
 
 # ================= 辅助函数 =================
 
@@ -29,28 +26,28 @@ def load_data(path):
 
 def create_distance_matrix(X_train, X_query):
     """预计算距离矩阵 (N_train, N_query)"""
-    # 注意：如果数据量太大，这里会爆内存。建议 N_train < 10000, N_query < 1000
-    dists = cdist(X_train, X_query, metric='euclidean')
-    return dists
+    return cdist(X_train, X_query, metric='euclidean')
+
+def get_mode(trace_data):
+    """通过 KDE 计算分布的峰值（众数/Mode）"""
+    data = trace_data.values.flatten()
+    kde = stats.gaussian_kde(data)
+    x_grid = np.linspace(data.min(), data.max(), 1000)
+    density = kde(x_grid)
+    peak_idx = np.argmax(density)
+    return x_grid[peak_idx]
 
 # ================= PyMC 模型 =================
 
 def run_hmc_optimization(points, labels, n_query=500):
     """
     运行 HMC 搜索最优 ell 和 sf2
-    points: (N, 3) 训练点 (作为地图先验)
-    labels: (N,) 训练点标签
-    n_query: 从 points 中随机选一部分作为 query 点来验证预测能力
     """
-    
-    # 1. 准备数据：构建 Training Set (地图) 和 Query Set (当前观测)
     N = len(points)
-    # 打乱数据
     idx = np.random.permutation(N)
     
-    # 选一部分作为"已知地图点"(Train)，一部分作为"待预测点"(Query)
-    # 实际 BKI 中，Train 是历史帧，Query 是当前帧。这里简化为空间插值问题。
-    n_train = min(2000, N - n_query) # 限制训练点数量以保证速度
+    # 限制训练点数量以保证速度
+    n_train = min(2000, N - n_query)
     
     X_train = points[idx[:n_train]]
     y_train_raw = labels[idx[:n_train]]
@@ -58,46 +55,33 @@ def run_hmc_optimization(points, labels, n_query=500):
     X_query = points[idx[n_train:n_train+n_query]]
     y_query_raw = labels[idx[n_train:n_train+n_query]] 
     
-    # [核心新增] === 标签映射 (Label Mapping) ===
-    # 原因：RELLIS-3D 原始标签是不连续的(如 0, 1, 3, 4...)。
-    # 如果直接用作 One-Hot 的索引，会导致 IndexError 或 矩阵维度过大。
-    # 这里将出现的标签重新映射为 0, 1, 2... 紧凑格式。
+    # === 标签映射 (Label Mapping) ===
     unique_labels = np.unique(np.concatenate((y_train_raw, y_query_raw)))
     n_active_classes = len(unique_labels)
     
     print(f"检测到 {n_active_classes} 个有效类别，正在建立映射...")
     label_map = {original: mapped for mapped, original in enumerate(unique_labels)}
     
-    # 应用映射
     y_train = np.array([label_map[y] for y in y_train_raw])
     y_query_gt = np.array([label_map[y] for y in y_query_raw])
     
     print(f"Building Model | Train: {n_train}, Query: {n_query}, Classes: {n_active_classes}")
     
-    # 将 y_train 转为 One-Hot (N_train, n_active_classes)
     y_train_oh = np.zeros((n_train, n_active_classes))
     y_train_oh[np.arange(n_train), y_train] = 1.0
 
-    # 2. 预计算距离矩阵 (Constant in the model)
+    # 预计算距离矩阵
     dist_matrix = create_distance_matrix(X_train, X_query)
     
     with pm.Model() as bki_model:
         # --- A. 定义随机变量 (Priors) ---
-        # ell (长度尺度): 必须 > 0。根据 vbki.h 默认 0.1-0.5，我们给一个 Gamma 分布
-        ell = pm.Gamma("ell", alpha=2.0, beta=10.0) # 均值 0.2
+        # ell: 长度尺度，影响范围。根据 vbki.h 默认设定，我们给一个宽泛的 Gamma 分布
+        ell = pm.Gamma("ell", alpha=2.0, beta=10.0) 
         
-        # sf2 (信号方差): 必须 > 0。默认 1.0
-        sf2 = pm.Gamma("sf2", alpha=2.0, beta=2.0)  # 均值 1.0
+        # sf2: 信号方差，置信度权重。
+        sf2 = pm.Gamma("sf2", alpha=2.0, beta=2.0)
         
-        # --- B. 定义 BKI 核函数 (Deterministic Logic) ---
-        # 对应 C++: covSparse / distAdaptive
-        # k = sf2 * exp( -0.5 * dist^2 / ell^2 )
-        # 注意：需要处理截断 (Sparse Cutoff)
-        
-        # 1. 计算高斯部分
-        # kernel_val = sf2 * pm.math.exp(-0.5 * (dist_matrix**2) / (ell**2))
-
-        # --- B. 定义 BKI 核函数 (复现 C++ vbki.h 逻辑) ---
+        # --- B. 定义 BKI 核函数 (复现 C++ vbki.h 逻辑: Sparse Cosine Kernel) ---
         # 1. 计算归一化距离 r = d / ell
         r = dist_matrix / ell
         
@@ -114,53 +98,38 @@ def run_hmc_optimization(points, labels, n_query=500):
         k_raw = ( (term1 * term2 / 3.0) + (term3 / (2.0 * pi)) ) * sf2
         
         # 4. 截断 (C++逻辑: 小于0则置为0)
-        # 这种核函数通常在 r >= 1 时会变成负数震荡或衰减，C++ 强行截断为 0
         kernel_val = pm.math.switch(k_raw < 0, 0.0, k_raw)
-        
-        # 2. 应用稀疏截断 (模拟 C++ if dist > 3*ell return 0)
-        # 为了 HMC 梯度连续性，这里暂不使用硬截断(switch)，依靠高斯函数的快速衰减
         
         # --- C. BKI 更新 (Bayesian Update) ---
         # Alphas = Sum( Kernel * Labels ) + Prior
-        # (N_train, N_query).T @ (N_train, n_classes) -> (N_query, n_classes)
-        # 这是一个加权求和过程
-        
-        # PyTensor 的 dot 操作
-        # kernel_val shape: (N_train, N_query)
-        # y_train_oh shape: (N_train, n_classes)
-        # output alphas: (N_query, n_classes)
-        
-        # PyTensor 的 dot 操作
         alphas_pred = pt.dot(kernel_val.T, y_train_oh)
         
-        # 添加极小值防止除零 (Dirichlet Prior typically 0 or 0.001)
+        # 添加极小值防止除零
         alphas_pred = alphas_pred + 1e-3
         
         # --- D. 定义 Likelihood ---
-        # 我们希望预测的 alphas 能最大化真实标签 y_query_gt 的概率
         # BKI 输出的是 Dirichlet 分布参数，其期望概率为 alpha_i / sum(alphas)
-        
         probs = alphas_pred / pt.sum(alphas_pred, axis=1, keepdims=True)
         
-        # 观测值：真实的类别 ID (Mapped IDs)
+        # 观测值
         obs = pm.Categorical("obs", p=probs, observed=y_query_gt)
         
         # --- E. 采样 ---
         print("Starting HMC Sampling...")
         trace = pm.sample(draws=1000, tune=1000, chains=2, target_accept=0.9)
         
-        return trace, bki_model
+        return trace
 
 # ================= 主程序 =================
 
 if __name__ == "__main__":
-    # 1. 加载数据
     try:
+        # 1. 加载数据
         points, labels = load_data(DATA_PATH)
         print(f"Data Loaded: {len(points)} points")
         
         # 2. 运行优化
-        trace, model = run_hmc_optimization(points, labels, n_query=200)
+        trace = run_hmc_optimization(points, labels, n_query=200)
         
         # 3. 分析结果
         print("\n=== Optimization Results ===")
@@ -207,13 +176,25 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"绘图警告: {e}")
         
-        # 提取建议参数
-        best_ell = trace.posterior["ell"].mean().item()
-        best_sf2 = trace.posterior["sf2"].mean().item()
+        # 4. 提取建议参数 (Mean vs Mode)
+        ell_samples = trace.posterior["ell"]
+        sf2_samples = trace.posterior["sf2"]
         
-        print(f"\n[结果] 推荐回填 C++ (vbki.h) 的参数:")
-        print(f"float ell = {best_ell:.4f};")
-        print(f"float sf2 = {best_sf2:.4f};")
+        # 计算均值 (Mean) - 统计学期望
+        mean_ell = ell_samples.mean().item()
+        mean_sf2 = sf2_samples.mean().item()
+        
+        # 计算众数 (Mode/Peak) - 概率密度最大的点 (最推荐)
+        mode_ell = get_mode(ell_samples)
+        mode_sf2 = get_mode(sf2_samples)
+        
+        print(f"\n[结果比较]")
+        print(f"Mean (均值) -> ell: {mean_ell:.4f}, sf2: {mean_sf2:.4f}")
+        print(f"Mode (众数) -> ell: {mode_ell:.4f}, sf2: {mode_sf2:.4f}")
+        
+        print(f"\n[最终推荐回填 C++ (vbki.h) 的参数] (建议优先使用 Mode)")
+        print(f"float ell = {mode_ell:.4f};")
+        print(f"float sf2 = {mode_sf2:.4f};")
         
     except Exception as e:
         print(f"\nCritical Error: {e}")
