@@ -1,132 +1,114 @@
-既然你已经完成了 `ex-prep-rellis` 步骤，并生成了用于下游任务的 `.npy` 证据文件（在 `01_inferenced_npy` 目录下），接下来的复现流程主要包含三个阶段：**投影 (Projection)** -\> **格式转换 (Conversion)** -\> **建图 (Mapping)**。
+根据您提供的 `rellis_acc_inference.py` 和 `universal_utils.py`，以及您之前的“投影”进度，我建议您将后续工作拆分为以下 **4 个独立的 Jupyter Notebook**。
 
-这是从“2D 图像理解”迈向“3D 空间建图”的关键跨越。请按照以下步骤操作：
+这种分步方式可以帮助您将 **数据关联（Data Association）**、**空间变换（Spatial Transformation）** 和 **不确定性计算（Uncertainty Calculation）** 解耦，便于调试和理解。
 
-### 第一阶段：2D 语义投影到 3D 点云 (Projection)
+---
 
-**目的**：将你刚刚生成的 2D 预测结果和不确定性信息，结合相机内参和外参，投影到 3D 激光雷达点云上。
+### **步骤一：单帧语义融合与深度校验**
 
-**1. 修改路径配置**
-打开文件 `Projection/rellis_acc_inference.py`，你需要根据你的服务器环境修改硬编码的路径。
+**文件名建议：** `01_Frame_Fusion_and_Sampling.ipynb`
 
-找到如下代码块（大约在 118-125 行左右），并进行修改：
+**目标：** 实现单帧 LiDAR 点云与 2D 概率图（Probability Map）的对应，并解决“遮挡”问题。
 
-```python
-# 修改前（原作者路径）：
-# RELLIS_ROOT = '/data/Rellis-3D'
-# RELLIS_CAMERA_INFO = '/data/Rellis_3D_cam_intrinsic/Rellis-3D'
-# RELLIS_TRANSFORM = '/data/Rellis_3D_cam2lidar_20210224/Rellis_3D'
+**核心内容：**
 
-# 修改后（你的环境）：
-RELLIS_ROOT = '/root/autodl-tmp/Rellis-3D'  # 你的数据集根目录
-# 注意：你需要确认是否有 camera_info.txt 和 transforms.yaml 文件
-# 如果它们在数据集子文件夹里，你需要相应调整路径，或者把它们复制出来
-RELLIS_CAMERA_INFO = '/root/autodl-tmp/Rellis-3D' 
-RELLIS_TRANSFORM = '/root/autodl-tmp/Rellis-3D'
+1. **数据读取**：加载一帧 LiDAR `.bin` 和对应的 2D 语义分割推理结果 `.npy`（即 `rellis_acc_inference.py` 中的 `lbl_path`）。
+2. **投影索引**：利用您已经写好的投影代码，获取每个 3D 点在图像上的  坐标。
+3. **概率采样（关键）**：
+* 复现 `process_each_frame` 中的逻辑：根据  索引，从 `.npy` (维度 ) 中取出对应的概率向量 (维度 )。
+* **改进点**：原代码直接采样（`label[:, v, u]`），您应在此步骤增加 **深度检查（Z-buffer check）** 或 **遮挡剔除**，避免将前景的概率赋给被遮挡的背景点。
 
-# ... (往下翻) ...
 
-# 修改前：
-# MY_DIR_ROOT = '/kjyoung/convertedRellis'
+4. **可视化验证**：
+* 输出这一帧的点云，根据最大概率类别（Argmax）上色，检查物体边缘是否清晰（验证投影和采样是否正确）。
 
-# 修改后：
-MY_DIR_ROOT = '/root/convertedRellis' # 这必须与你在 prep.py 中设置的 OUTPUT_ROOT 一致
-```
 
-**2. 执行投影脚本**
-在 `Projection` 目录下运行以下命令。这会将序列 `00004` 的每一帧进行投影并融合（binning）。
 
-```bash
-cd Projection
-# 语法: python rellis_acc_inference.py {remark} {sequence} {binning_num}
-# binning_num=30 意味着每30帧合并成一个文件，用于加速建图
-python rellis_acc_inference.py rellisv3_edl_train-4 00004 30
-```
+**涉及原代码函数：** `process_each_frame`
 
-  * **成功标志**：运行结束后，你的 `/root/convertedRellis/rellisv3_edl_train-4/` 下会出现 `03_nby3pK_npy` 文件夹，里面包含融合后的 `.npy` 文件。
+---
 
------
+### **步骤二：多帧点云的时空对齐（拼接）**
 
-### 第二阶段：ROS 编译与数据格式转换
+**文件名建议：** `02_PointCloud_Accumulation.ipynb`
 
-**目的**：EvSemMap 的建图模块是基于 C++ 和 ROS 的，它无法直接读取 Python 的 `.npy`，需要转换为 `.pcd` (Point Cloud Data) 格式。
+**目标：** 利用位姿信息，将连续多帧的点云统一到同一个坐标系下。
 
-**1. 编译 ROS 工作空间**
-首先确保你安装了所有依赖（如 `pcl_ros`, `octomap_ros` 等）。
+**核心内容：**
 
-```bash
-# 假设你的代码目录结构是 EvSemMap/SemanticMap/src/SemanticMap
-cd ~/EvSemMap/SemanticMap  # 进入包含 src 的父目录
-catkin_make                # 编译 ROS 包
-source devel/setup.bash    # 刷新环境变量
-```
+1. **位姿读取**：读取 `poses.txt`，解析出  变换矩阵。
+2. **相对变换计算**：
+* 复现 `accumulate` 函数的逻辑。
+* 计算当前帧  到基准帧（如第 0 帧）的变换矩阵：。
 
-**2. 修改转换配置**
-打开 `SemanticMap/src/SemanticMap/launch/pcd_conversion.launch`，修改输入输出路径：
 
-```xml
-<launch>
-    <arg name="pkg" default="$(find evsemmap)" />
-    <node pkg="evsemmap" type="pcd_conversion" name="pcd_conversion" output="screen">        
-        <param name="convert_mode_to_my_extension" value="true" />
+3. **坐标变换**：将第  帧的点云  变换为 。
+4. **堆叠（Stacking）**：将多帧变换后的几何坐标  和步骤一中采样得到的概率向量  进行 `np.concatenate` 拼接。
+5. **可视化验证**：
+* 使用 Matplotlib 或 Open3D 显示拼接后的点云，检查是否有明显的“分层”或“漂移”（验证位姿变换是否正确）。
+* **注意**：观察移动物体（如车）是否留下了长长的“鬼影”，这是原代码的痛点。
 
-        <param name="scan_start" value="1" />   
-        <param name="scan_num" value="30" />   
 
-        <param name="out_path" value="/home/xzy/Downloads/convertedRellis/rellisv3_edl_train-4/05_pVec_pcd/00004/" />
-        <param name="dir" value="/home/xzy/Downloads/convertedRellis/rellisv3_edl_train-4/03_nby3pK_npy/00004/" />
 
-    </node>
-</launch>
-```
+**涉及原代码函数：** `accumulate`, `parse_poses_slam`
 
-**3. 执行转换**
+---
 
-```bash
-roslaunch evsemmap pcd_conversion.launch
-```
+### **步骤三：证据理论（Evidential）与不确定性计算**
 
-  * **成功标志**：终端打印 `Saved ... data points`，并且 `05_pVec_pcd` 目录下出现 `.pcd` 文件。
+**文件名建议：** `03_Uncertainty_Calculation.ipynb`
 
------
+**目标：** 处理拼接后的概率向量，计算不确定性指标（EvSemMap 的核心）。
 
-### 第三阶段：构建语义地图 (Mapping)
+**核心内容：**
 
-**目的**：使用贝叶斯核推理 (BKI) 将离散的点云融合成连续的体素地图。
+1. **概率融合（可选）**：
+* 原代码似乎只是简单的拼接点（points queue），没有对同一个空间位置的点的概率进行贝叶斯更新或 DS 证据理论融合。
+* **创新点/进阶**：如果您想做体素化（Voxelization）融合，可以在这里尝试将空间相近的点的概率向量合并。
 
-**1. 修改建图配置**
-打开 `SemanticMap/src/SemanticMap/config/datasets/deploy_rellisv3_4_1-30.yaml`，这是核心配置文件。
 
-```yaml
-# 修改输入目录，指向你刚刚生成的 pcd 文件夹
-dir: /root/convertedRellis/rellisv3_edl_train-4/05_pVec_pcd/00004/
+2. **不确定性度量**：
+* 基于每个点的概率向量 ，计算不确定性。
+* **熵 (Entropy)**: 
+* **置信度 (Confidence)**: 
+* 如果您的 `.npy` 输出的是 logits 而非 softmax 后的概率，或者对应 Evidential Deep Learning 的  参数，这里需要应用相应的 Dempster-Shafer 理论公式（如 Vacuity, Dissonance）。
 
-# 确保 scan_num 与转换阶段一致
-scan_num: 30 
-```
 
-**2. 执行建图命令**
-这里我们使用论文推荐的 `ebs` (Evidential Bayesian Semantic Mapping) 方法或 `dempster` 方法。
+3. **分析**：统计地图中哪些区域（如物体边缘、远处）不确定性最高。
 
-```bash
-# dataset 对应 config/datasets/ 下的文件名
-# method 对应 config/methods/ 下的文件名
-# result_name 是输出地图的路径和前缀
-roslaunch evsemmap mapping.launch \
-    dataset:=deploy_rellisv3_4_1-30 \
-    method:=ebs \
-    result_name:=/root/deployTest/rellis_map
-```
+**涉及原代码逻辑：** 原代码在 `rellis_acc_inference.py` 中主要是存储和传递 `labels`（即概率），具体计算可能在后续的 C++ 代码或 `universal_utils` 外部。您需要在 Python 中显式实现这部分。
 
-  * **结果**：这将生成一个包含语义和不确定性信息的全局地图文件（通常是 `.map` 或自定义文本格式）。
+---
 
------
+### **步骤四：VTK 文件生成与最终可视化**
 
-### 总结：你的“任务清单”
+**文件名建议：** `04_Export_and_Visualization.ipynb`
 
-1.  **Run Python**: 修改并运行 `Projection/rellis_acc_inference.py`。
-2.  **Build ROS**: 在 `SemanticMap` 目录运行 `catkin_make`。
-3.  **Run ROS (Convert)**: 修改并运行 `pcd_conversion.launch`。
-4.  **Run ROS (Map)**: 修改 `deploy_rellisv3_4_1-30.yaml` 并运行 `mapping.launch`。
+**目标：** 将处理好的数据导出为标准格式，以便在 Paraview 中查看（复现 `universal_utils.py` 的功能）。
 
-如果你在第一步 Projection 找不到 `camera_info` 或 `transforms` 文件，请检查 Rellis-3D 数据集解压后的目录结构，这些标定文件通常需要单独下载或位于特定子目录中。
+**核心内容：**
+
+1. **数据整理**：准备好  的坐标数组，以及  的概率数组，或者  的不确定性数组。
+2. **VTK 写入**：
+* 调用 `universal_utils.py` 中的 `write_geoatt_vtk3_prob`。
+* 该函数会将概率向量拆解为多个标量场（Scalar Fields），例如 `class1`, `class2`... 和 `predictedClass`。
+
+
+3. **属性扩展**：
+* 修改/扩展该函数，将步骤三计算的 `Uncertainty` 也作为一个 Scalar Field 写入 `.vtu` 文件。
+
+
+4. **最终检查**：使用 Paraview 打开生成的 `.vtu` 文件，查看点云地图，并切换 Color Map 查看“预测类别”和“不确定性”的分布。
+
+**涉及原代码函数：** `write_geoatt_vtk3`, `write_geoatt_vtk3_prob`
+
+---
+
+### **总结建议**
+
+* **Step 1** 是最难的（涉及坐标系转换和遮挡处理），也是最重要的基础。
+* **Step 2** 主要是矩阵运算，验证位姿是否准确。
+* **Step 3** 是您项目的核心理论部分（EvSemMap 的 "Ev"）。
+* **Step 4** 是为了好看的结果展示。
+
+您可以先从 **Step 1** 开始，确保单帧的颜色（语义）打在点云上是准确的。
