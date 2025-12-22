@@ -1387,42 +1387,181 @@ $$\alpha = \text{activation}(\text{logits}) + 1$$
 
 -------
 
-上面是我step2的相关代码。现在我需要开始step3相关notebook代码的构建。
+当前提供的step3代码：
 
-请你服用step2中有用的路径、变量、函数，为我分块生成step3的内容。
+import numpy as np
 
+def alpha_to_mass(alpha):
+    """
+    将 Dirichlet 参数 alpha 转换为 DS Mass 和 Uncertainty
+    Input: alpha (..., K)
+    Output: mass (..., K), uncertainty (..., 1)
+    """
+    S = np.sum(alpha, axis=-1, keepdims=True) # S = sum(alpha)
+    K = alpha.shape[-1]
+    
+    # Mass k = (alpha_k - 1) / S
+    mass = (alpha - 1.0) / S
+    
+    # Uncertainty = K / S
+    uncertainty = K / S
+    
+    # 裁剪防止数值误差导致负数 (理论上 alpha >= 1)
+    mass = np.maximum(mass, 0.0)
+    
+    return mass, uncertainty
 
-=============================================================
+def dempster_fusion(m1, m2, u1, u2):
+    """
+    DS 组合规则融合两个 Mass 分布
+    m1, m2: (K,) 或 (N, K) 的 Mass 向量
+    u1, u2: (1,) 或 (N, 1) 的 Uncertainty 标量
+    """
+    # 1. 计算冲突因子 C (Conflict)
+    # C = sum_{i!=j} m1[i] * m2[j]
+    # 可以通过外积计算所有对的乘积，然后减去对角线(i==j)的部分
+    
+    # 为了支持批量计算 (N, K)，我们使用 einsum 或者 广播
+    # 这里展示单点逻辑的向量化版本
+    
+    # 计算所有两两乘积矩阵 (N, K, K)
+    # product_matrix[n, i, j] = m1[n, i] * m2[n, j]
+    product_matrix = np.einsum('...i,...j->...ij', m1, m2)
+    
+    # 对角线部分 (i==j):用于共识
+    diagonal = np.diagonal(product_matrix, axis1=-2, axis2=-1) # (..., K)
+    consensus = diagonal
+    
+    # 冲突 C = 所有元素和 - 对角线元素和
+    C = np.sum(product_matrix, axis=(-2, -1)) - np.sum(consensus, axis=-1)
+    
+    # 2. 归一化因子
+    norm_factor = 1.0 - C
+    # 防止除以0
+    norm_factor = np.maximum(norm_factor, 1e-8)
+    
+    # 3. 融合公式
+    # m_new[i] = (m1[i]*m2[i] + m1[i]*u2 + m2[i]*u1) / (1-C)
+    
+    term1 = consensus           # m1[i] * m2[i]
+    term2 = m1 * u2             # m1[i] * u2 (广播)
+    term3 = m2 * u1             # m2[i] * u1 (广播)
+    
+    m_new = (term1 + term2 + term3) / norm_factor[..., None]
+    
+    # 计算新的不确定性 (理论上 u_new = 1 - sum(m_new))
+    # 或者用公式 u_new = (u1 * u2) / (1-C)
+    u_new = (u1 * u2) / norm_factor[..., None]
+    
+    return m_new, u_new
 
-存储在`1_inferenced_npy`中.npy 中的数值严格遵循证据理论（Evidential Deep Learning）的定义：
-$$\alpha = \text{activation}(\text{logits}) + 1$$
+# === 使用示例 ===
+# 假设从 .npy 读取了 alpha
+alpha_obs = np.array([2.0, 1.2, 1.5]) # 假设3类
+current_map_mass = np.array([0.0, 0.0, 0.0]) # 初始全0
+current_map_unc = 1.0
 
-总结
-- 存储内容：Dirichlet 分布参数 $\alpha$。
-- 数值特征：所有值理论上都应 $\ge 1$。它们 没有 经过归一化（即和不为1）。
-- 如何使用：
-- 计算概率 (Probability)：$p_k = \alpha_k / S$，其中 $S = \sum \alpha_i$。
-- 计算不确定性 (Uncertainty)：$u = K / S$，其中 $K$ 是类别数。
-- 不能做的事：不要直接对该 .npy 数据求熵（Entropy），因为它们不是归一化的概率分布。
+# 1. 转换
+obs_mass, obs_unc = alpha_to_mass(alpha_obs)
 
-1. SemanticMap/src/SemanticMap/config/methods
+# 2. 融合
+# 如果是第一次 (num=0)，直接赋值
+current_map_mass = obs_mass
+current_map_unc = obs_unc
 
- 阅读源码，详细分析证据的组合规则（Dempster's Rule of Combination）的实现原理和步骤。之后我会使用python在notebook中实现。
+# 如果是第二次观测
+alpha_obs_2 = np.array([5.0, 1.1, 1.1])
+obs_mass_2, obs_unc_2 = alpha_to_mass(alpha_obs_2)
 
- 组合规则的两次融合是对什么进行的？不同帧建的点云，还是说即使在同一帧内，不同图像获取的建图也需要组合规则的融合？
+fused_mass, fused_unc = dempster_fusion(current_map_mass, obs_mass_2, current_map_unc, obs_unc_2)
 
+print("Fused Mass:", fused_mass)
+print("Fused Unc:", fused_unc)
 
+------
 
-2.
+import numpy as np
 
-源代码 并不是 以 LiDAR 帧为核心循环，而是以 图像 为核心循环。
+# 1. 基础配置
+VOXEL_RESOLUTION = 0.2  # 分辨率，单位：米 (原项目典型值)
+NUM_CLASSES = 9         # 类别数
 
-请看 Projection/rellis_acc_inference.py（或类似的推理脚本）：
+# 2. 地图容器 (稀疏体素网格)
+# Key: (x_idx, y_idx, z_idx)
+# Value: { 'mass': np.array, 'uncertainty': float }
+voxel_map = {} 
 
-它通常遍历所有图片，对于每一张图片，找到最近的一个 LiDAR 帧进行投影。
+def get_voxel_index(point, resolution):
+    """将物理坐标转换为体素索引"""
+    return tuple(np.floor(point / resolution).astype(int))
 
-这一部分我存在两个疑问：
+def update_voxel_map(voxel_map, points, point_alphas, resolution):
+    """
+    更新体素地图的主函数
+    points: (N, 3) 点云坐标
+    point_alphas: (N, K) 每个点的 Dirichlet 参数 (from .npy)
+    """
+    # 预先计算所有点的体素索引 (向量化加速)
+    voxel_indices = np.floor(points / resolution).astype(int)
+    
+    # 遍历每个点进行融合
+    # 注意：为了效率，实际工程中通常会先对 indices 进行 argsort 或 unique，
+    # 将属于同一个体素的点先在这一帧内合并，再与全局地图融合。
+    # 这里为了演示逻辑，使用简单的逐点循环。
+    
+    for i in range(len(points)):
+        idx = tuple(voxel_indices[i])
+        
+        # 1. 获取当前观测的 Mass 和 Uncertainty
+        # (假设您已经实现了上一步的 alpha_to_mass 函数)
+        obs_alpha = point_alphas[i]
+        obs_mass, obs_unc = alpha_to_mass(obs_alpha) # 需定义此函数
+        
+        if idx not in voxel_map:
+            # --- 初始化新体素 ---
+            voxel_map[idx] = {
+                'mass': obs_mass,
+                'uncertainty': obs_unc,
+                'count': 1
+            }
+        else:
+            # --- 融合旧体素 ---
+            curr_voxel = voxel_map[idx]
+            old_mass = curr_voxel['mass']
+            old_unc = curr_voxel['uncertainty']
+            
+            # 调用 Dempster 组合规则 (需定义此函数)
+            new_mass, new_unc = dempster_fusion(old_mass, obs_mass, old_unc, obs_unc)
+            
+            # 更新状态
+            curr_voxel['mass'] = new_mass
+            curr_voxel['uncertainty'] = new_unc
+            curr_voxel['count'] += 1
 
-1.所谓的图片对应的最近雷达帧是什么意思，如果图片被标位第二帧但是是第二帧的最后一张图，那源代码是对应到第二帧还是第三帧？
+    return voxel_map
 
-2.如果同一帧的多张点云都被堆叠，那么岂不是有重叠的点云？源代码中这些点云是如何处理的？有做降采样或贝叶斯融合吗？
+# 3. 将地图转换为点云用于可视化
+def map_to_pointcloud(voxel_map, resolution):
+    points = []
+    colors = [] # 或 semantics
+    uncertainties = []
+    
+    for idx, data in voxel_map.items():
+        # 恢复物理坐标 (取体素中心)
+        center_point = (np.array(idx) * resolution) + (resolution / 2.0)
+        
+        # 获取最大概率类别
+        mass = data['mass']
+        label = np.argmax(mass)
+        
+        points.append(center_point)
+        colors.append(label) # 这里存 label，后续用 get_rellis_colors 转颜色
+        uncertainties.append(data['uncertainty'])
+        
+    return np.array(points), np.array(colors), np.array(uncertainties)
+----------
+
+上面是我step2的相关代码。现在我需要开始step3相关notebook代码的构建。目前已经提供了一些信息。
+
+请你复用step2中有用的路径、变量、函数，参考step3已有的部分代码，为我分块生成step3的完整内容(分为多个notebook块)。
+
